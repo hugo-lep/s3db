@@ -11,7 +11,7 @@ s3_client_setup(
   bucket = NA,
   endpoint = NA,
   region = NA,
-  use_config_files = FALSE
+  use_config_files = TRUE
 )
 }
 \arguments{

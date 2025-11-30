@@ -11,7 +11,7 @@
 #' @param s3_bucket Nom de mon bucket S3
 #' @param s3_main_folder Nom du dossier principal dans le bucket
 #' @param secure_key Sel pour cripter les informations sensibles
-#' @param config_path emplacement pour écrire un fichier de config local
+#' @param config_path TRUE,FALSE or write location ex: "inst/config/"
 #'
 #' @importFrom readr write_rds
 #'
@@ -34,6 +34,7 @@ set_config_s3_location <- function(s3_bucket, s3_main_folder, secure_key,
     is.character(secure_key), length(secure_key) == 1
   )
 
+  if(isTRUE(config_path)) config_path <- "inst/app/data/"
   config_path <- paste0(config_path,"config_s3_location.rds")
   config <- list(
     s3_bucket = s3_bucket,
@@ -72,11 +73,12 @@ set_config_s3_location <- function(s3_bucket, s3_main_folder, secure_key,
 #' @param s3_SECRET_ACCESS_KEY AWS SECRET ACCESS KEY
 #' @param s3_REGION REGION
 #' @param s3_ENDPOINT Endpoint (à spécifier si autre que AWS/S3)
-#' @param config_path emplacement pour écrire un fichier de config local
+#' @param config_path TRUE,FALSE or write location ex: "inst/config/"
 #'
-#' @returns Rien. La fonction enregistre un fichier sur le disque.
 #' @importFrom sodium data_encrypt
 #' @importFrom sodium hash
+#'
+#' @returns Rien. La fonction enregistre un fichier sur le disque.
 #' @export
 #'
 #' @examples
@@ -93,6 +95,7 @@ set_config_s3_access <- function(s3_ACCESS_KEY_ID,
                                  s3_ENDPOINT = "s3.amazonaws.com",
                                  config_path = "inst/app/data/") {
 
+  if(isTRUE(config_path)) config_path <- "inst/app/data/"
   key_file_path <- paste0(config_path,"config_s3_location.rds")
 
   if (!file.exists(key_file_path)) {
@@ -249,7 +252,7 @@ s3_client_setup <- function(key = NA,
                             bucket = NA,
                             endpoint = NA,
                             region = NA,
-                            use_config_files = FALSE) {
+                            use_config_files = TRUE) {
 
   #  Lecture des fichiers de config si demandé
 

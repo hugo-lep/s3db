@@ -18,7 +18,7 @@ set_config_s3_location(
 
 \item{secure_key}{Sel pour cripter les informations sensibles}
 
-\item{config_path}{emplacement pour écrire un fichier de config local}
+\item{config_path}{TRUE,FALSE or write location ex: "inst/config/"}
 }
 \value{
 Rien. La fonction enregistre un fichier sur le disque.

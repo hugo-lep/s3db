@@ -21,7 +21,7 @@ set_config_s3_access(
 
 \item{s3_ENDPOINT}{Endpoint (à spécifier si autre que AWS/S3)}
 
-\item{config_path}{emplacement pour écrire un fichier de config local}
+\item{config_path}{TRUE,FALSE or write location ex: "inst/config/"}
 }
 \value{
 Rien. La fonction enregistre un fichier sur le disque.
