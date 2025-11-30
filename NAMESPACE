@@ -2,8 +2,13 @@
 
 export(s3_client_setup)
 export(s3_connection_HL)
+export(s3readRDS_HL)
 export(s3readRDS_HL_paws)
+export(set_config_s3_access)
+export(set_config_s3_location)
 importFrom(aws.s3,s3readRDS)
 importFrom(paws,s3)
+importFrom(readr,write_rds)
 importFrom(sodium,data_decrypt)
+importFrom(sodium,data_encrypt)
 importFrom(sodium,hash)

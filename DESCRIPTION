@@ -18,4 +18,5 @@ RoxygenNote: 7.3.3
 Imports: 
     aws.s3,
     paws,
+    readr,
     sodium

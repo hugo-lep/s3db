@@ -11,7 +11,7 @@ s3_connection_HL(
   bucket = NA,
   endpoint = NA,
   region = NA,
-  use_config_files = FALSE
+  config_path = TRUE
 )
 }
 \arguments{
@@ -27,7 +27,7 @@ s3_connection_HL(
 
 \item{region}{(chr) s3 region, OVH == ""}
 
-\item{use_config_files}{(log) TRUE if use with files config files}
+\item{config_path}{TRUE,FALSE or write location ex: "inst/config/"}
 }
 \value{
 Rien, mais crée des variables environnement simplifiant la connexion à S3
