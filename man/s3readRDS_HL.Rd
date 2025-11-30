@@ -7,7 +7,7 @@
 s3readRDS_HL(
   object,
   bucket = NA,
-  main_folder = NA,
+  main_folder = TRUE,
   key = NA,
   secret = NA,
   endpoint = NA,
@@ -19,7 +19,7 @@ s3readRDS_HL(
 
 \item{bucket}{Bucket S3}
 
-\item{main_folder}{Dossier à ajouter automatiquement devant l'objet}
+\item{main_folder}{(log) Dossier principal dans "HL_S3_MAIN_FOLDER" ajouté devant object à lire}
 
 \item{key}{Key pour accès au S3}
 
