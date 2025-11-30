@@ -121,3 +121,60 @@ s3exists_HL <- function(object,
   return(isTRUE(exists))
 }
 
+#' Liste les objets dans un bucket ou sous-dossier S3
+#'
+#' @param prefix Sous-dossier (peut être "")
+#' @param bucket Nom du bucket
+#' @param main_folder Si TRUE, préfixe automatiquement "HL_S3_MAIN_FOLDER"
+#' @param key S3 key
+#' @param secret S3 secret
+#' @param endpoint Base URL S3
+#' @param region Region (AWS requis, OVH="" )
+#'
+#' @return Liste d'objets (comme aws.s3::get_bucket)
+#' @export
+s3list_HL <- function(prefix = "",
+                      bucket = NA,
+                      main_folder = TRUE,
+                      key = NA,
+                      secret = NA,
+                      endpoint = NA,
+                      region = NA) {
+
+  # Lire valeurs depuis variables d'environnement
+  if (is.na(key)) key <- Sys.getenv("HL_S3_KEY")
+  if (is.na(secret)) secret <- Sys.getenv("HL_S3_SECRET")
+  if (is.na(bucket)) bucket <- Sys.getenv("HL_S3_BUCKET")
+  if (isTRUE(main_folder)) main_folder <- Sys.getenv("HL_S3_MAIN_FOLDER")
+  if (is.na(endpoint)) endpoint <- Sys.getenv("HL_S3_ENDPOINT")
+  if (is.na(region)) region <- Sys.getenv("HL_S3_REGION")
+
+  # Vérifications
+  if (any(is.na(c(key, secret, bucket, endpoint, region)))) {
+    stop("S3 non initialisé correctement. Vérifiez vos variables d'environnement ou les arguments passés.")
+  }
+  if (!is.character(main_folder)) {
+    stop("Pour utiliser 'main_folder = TRUE', une valeur doit être écrite dans HL_S3_MAIN_FOLDER.")
+  }
+
+  # Ajouter dossier principal si demandé
+  full_prefix <- prefix
+  if (!is.na(main_folder) && nzchar(main_folder)) {
+    full_prefix <- paste0(main_folder, "/", prefix)
+  }
+
+  # Normalisation : pas de double-slash
+  full_prefix <- gsub("//+", "/", full_prefix)
+
+  # Appel aws.s3
+  aws.s3::get_bucket(
+    bucket = bucket,
+    prefix = full_prefix,
+    key = key,
+    secret = secret,
+    region = region,
+    base_url = endpoint
+  )
+}
+
+
