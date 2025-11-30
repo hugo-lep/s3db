@@ -20,3 +20,5 @@ Imports:
     paws,
     readr,
     sodium
+URL: https://github.com/hugo-lep/s3db
+BugReports: https://github.com/hugo-lep/s3db/issues
