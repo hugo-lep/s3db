@@ -232,3 +232,65 @@ s3saveRDS_HL <- function(value,
   )
 }
 
+#' Supprimer un fichier sur S3 (OVH ou AWS) avec aws.s3
+#'
+#' @param object (chr) Fichier à supprimer (avec sous-dossier)
+#' @param bucket (chr) Bucket S3
+#' @param main_folder (log|chr) TRUE = utilise HL_S3_MAIN_FOLDER, sinon dossier ou ""
+#' @param key (chr) S3 key
+#' @param secret (chr) S3 secret
+#' @param endpoint (chr) Endpoint S3
+#' @param region (chr) Région
+#'
+#' @returns TRUE si suppression OK, FALSE sinon
+#' @export
+s3delete_HL <- function(object,
+                        bucket = NA,
+                        main_folder = TRUE,
+                        key = NA,
+                        secret = NA,
+                        endpoint = NA,
+                        region = NA) {
+
+  # --- Charger infos depuis variables d'env ---
+  if (is.na(key))       key       <- Sys.getenv("HL_S3_KEY")
+  if (is.na(secret))    secret    <- Sys.getenv("HL_S3_SECRET")
+  if (is.na(bucket))    bucket    <- Sys.getenv("HL_S3_BUCKET")
+  if (isTRUE(main_folder)) main_folder <- Sys.getenv("HL_S3_MAIN_FOLDER")
+  if (is.na(endpoint)) endpoint <- Sys.getenv("HL_S3_ENDPOINT")
+  if (is.na(region))   region   <- Sys.getenv("HL_S3_REGION")
+
+  # --- Vérifications ---
+  if (any(is.na(c(key, secret, bucket, endpoint, region)))) {
+    stop("S3 non initialisé correctement (key/secret/bucket/endpoint/region).")
+  }
+
+  if (isTRUE(main_folder)) {
+    stop("Pour utiliser main_folder = TRUE, HL_S3_MAIN_FOLDER doit être défini dans l'environnement.")
+  }
+
+  # Ajouter dossier principal
+  if (nzchar(main_folder)) {
+    object <- paste0(main_folder, "/", object)
+  }
+
+  # --- Suppression ---
+  tryCatch({
+    res <- aws.s3::delete_object(
+      object = object,
+      bucket = bucket,
+      key = key,
+      secret = secret,
+      region = region,
+      base_url = endpoint
+    )
+
+    # delete_object() retourne TRUE si succès
+    isTRUE(res)
+
+  }, error = function(e) {
+    FALSE
+  })
+}
+
+

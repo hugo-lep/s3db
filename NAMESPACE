@@ -2,6 +2,7 @@
 
 export(s3_client_setup)
 export(s3_connection_HL)
+export(s3delete_HL)
 export(s3exist_HL)
 export(s3list_HL)
 export(s3readRDS_HL)
