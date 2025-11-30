@@ -177,4 +177,58 @@ s3list_HL <- function(prefix = "",
   )
 }
 
+#' Fonction pour sauvegarder un .rds sur S3 (OVH compatible)
+#'
+#' @param object_name Nom du fichier à créer dans S3 (peut inclure sous-dossiers)
+#' @param value Objet R à sauvegarder
+#' @param bucket Bucket S3
+#' @param main_folder (logique) Ajouter automatiquement HL_S3_MAIN_FOLDER ?
+#' @param key S3 key
+#' @param secret S3 secret
+#' @param endpoint Endpoint OVH
+#' @param region Région ("" pour OVH)
+#'
+#' @return TRUE si succès, erreur sinon
+#' @export
+s3saveRDS_HL <- function(value,
+                         object_name,
+                         bucket = NA,
+                         main_folder = TRUE,
+                         key = NA,
+                         secret = NA,
+                         endpoint = NA,
+                         region = NA) {
+
+  #--- Récupération depuis variables d'environnement si manquants
+  if (is.na(key))      key      <- Sys.getenv("HL_S3_KEY")
+  if (is.na(secret))   secret   <- Sys.getenv("HL_S3_SECRET")
+  if (is.na(bucket))   bucket   <- Sys.getenv("HL_S3_BUCKET")
+  if (isTRUE(main_folder)) main_folder <- Sys.getenv("HL_S3_MAIN_FOLDER")
+  if (is.na(endpoint)) endpoint <- Sys.getenv("HL_S3_ENDPOINT")
+  if (is.na(region))   region   <- Sys.getenv("HL_S3_REGION")
+
+  #--- Vérifications
+  if (any(is.na(c(key, secret, bucket, endpoint, region)))) {
+    stop("S3 non initialisé correctement.")
+  }
+  if (!is.character(main_folder)) {
+    stop("Pour utiliser 'main_folder = TRUE', HL_S3_MAIN_FOLDER doit être défini.")
+  }
+
+  #--- Construction du chemin final
+  if (!is.na(main_folder)) {
+    object_name <- paste0(main_folder, "/", object_name)
+  }
+
+
+  aws.s3::s3saveRDS(
+    value,
+    object = object_name,
+    bucket = bucket,
+    key = key,
+    secret = secret,
+    region = region,
+    base_url = endpoint
+  )
+}
 
