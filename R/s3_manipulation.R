@@ -72,7 +72,7 @@ s3readRDS_HL <- function(object,
 #'
 #' @returns TRUE si l'objet existe, FALSE sinon
 #' @export
-s3exists_HL <- function(object,
+s3exist_HL <- function(object,
                         bucket = NA,
                         main_folder = TRUE,
                         key = NA,
