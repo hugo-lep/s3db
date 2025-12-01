@@ -221,7 +221,7 @@ s3saveRDS_HL <- function(value,
 
   # si main_folder n'est pas NA, on l'ajoute devant l'objet
   if (!isFALSE(main_folder)) {
-    object <- paste0(main_folder, "/", object)
+    object_name <- paste0(main_folder, "/", object_name)
   }
 
 
