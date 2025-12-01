@@ -22,3 +22,8 @@ Imports:
     sodium
 URL: https://github.com/hugo-lep/s3db
 BugReports: https://github.com/hugo-lep/s3db/issues
+Suggests: 
+    mockery,
+    testthat,
+    withr
+Config/testthat/edition: 3

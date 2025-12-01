@@ -40,12 +40,13 @@ s3readRDS_HL <- function(object,
   if (any(is.na(c(key, secret, bucket, endpoint, region)))) {
     stop("S3 non initialisé correctement. Vérifiez vos variables d'environnement ou les arguments passés.")
   }
-  if (!is.character(main_folder)) {
+
+  if (!(is.character(main_folder) || isFALSE(main_folder))) {
     stop("Pour utiliser 'main_folder = TRUE', une valeur doit être écrit dans environment variable: 'HL_S3_MAIN_FOLDER'")
   }
 
   # si main_folder n'est pas NA, on l'ajoute devant l'objet
-  if (!is.na(main_folder)) {
+  if (!isFALSE(main_folder)) {
     object <- paste0(main_folder, "/", object)
   }
 
@@ -92,12 +93,12 @@ s3exist_HL <- function(object,
   if (any(is.na(c(key, secret, bucket, endpoint, region)))) {
     stop("S3 non initialisé correctement. Vérifiez vos variables d'environnement ou les arguments passés.")
   }
-  if (isTRUE(main_folder) && !is.character(main_folder)) {
-    stop("Pour utiliser 'main_folder = TRUE', une valeur doit être présente dans 'HL_S3_MAIN_FOLDER'.")
+  if (!(is.character(main_folder) || isFALSE(main_folder))) {
+    stop("Pour utiliser 'main_folder = TRUE', une valeur doit être écrit dans environment variable: 'HL_S3_MAIN_FOLDER'")
   }
 
-  # Préfixer si demandé
-  if (!is.na(main_folder)) {
+  # si main_folder n'est pas NA, on l'ajoute devant l'objet
+  if (!isFALSE(main_folder)) {
     object <- paste0(main_folder, "/", object)
   }
 
@@ -153,14 +154,13 @@ s3list_HL <- function(prefix = "",
   if (any(is.na(c(key, secret, bucket, endpoint, region)))) {
     stop("S3 non initialisé correctement. Vérifiez vos variables d'environnement ou les arguments passés.")
   }
-  if (!is.character(main_folder)) {
-    stop("Pour utiliser 'main_folder = TRUE', une valeur doit être écrite dans HL_S3_MAIN_FOLDER.")
+  if (!(is.character(main_folder) || isFALSE(main_folder))) {
+    stop("Pour utiliser 'main_folder = TRUE', une valeur doit être écrit dans environment variable: 'HL_S3_MAIN_FOLDER'")
   }
 
-  # Ajouter dossier principal si demandé
-  full_prefix <- prefix
-  if (!is.na(main_folder) && nzchar(main_folder)) {
-    full_prefix <- paste0(main_folder, "/", prefix)
+  # si main_folder n'est pas NA, on l'ajoute devant l'objet
+  if (!isFALSE(main_folder)) {
+    object <- paste0(main_folder, "/", object)
   }
 
   # Normalisation : pas de double-slash
@@ -211,13 +211,13 @@ s3saveRDS_HL <- function(value,
   if (any(is.na(c(key, secret, bucket, endpoint, region)))) {
     stop("S3 non initialisé correctement.")
   }
-  if (!is.character(main_folder)) {
-    stop("Pour utiliser 'main_folder = TRUE', HL_S3_MAIN_FOLDER doit être défini.")
+  if (!(is.character(main_folder) || isFALSE(main_folder))) {
+    stop("Pour utiliser 'main_folder = TRUE', une valeur doit être écrit dans environment variable: 'HL_S3_MAIN_FOLDER'")
   }
 
-  #--- Construction du chemin final
-  if (!is.na(main_folder)) {
-    object_name <- paste0(main_folder, "/", object_name)
+  # si main_folder n'est pas NA, on l'ajoute devant l'objet
+  if (!isFALSE(main_folder)) {
+    object <- paste0(main_folder, "/", object)
   }
 
 
@@ -265,12 +265,12 @@ s3delete_HL <- function(object,
     stop("S3 non initialisé correctement (key/secret/bucket/endpoint/region).")
   }
 
-  if (isTRUE(main_folder)) {
-    stop("Pour utiliser main_folder = TRUE, HL_S3_MAIN_FOLDER doit être défini dans l'environnement.")
+  if (!(is.character(main_folder) || isFALSE(main_folder))) {
+    stop("Pour utiliser 'main_folder = TRUE', une valeur doit être écrit dans environment variable: 'HL_S3_MAIN_FOLDER'")
   }
 
-  # Ajouter dossier principal
-  if (nzchar(main_folder)) {
+  # si main_folder n'est pas NA, on l'ajoute devant l'objet
+  if (!isFALSE(main_folder)) {
     object <- paste0(main_folder, "/", object)
   }
 
