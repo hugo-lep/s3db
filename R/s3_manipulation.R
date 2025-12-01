@@ -74,12 +74,12 @@ s3readRDS_HL <- function(object,
 #' @returns TRUE si l'objet existe, FALSE sinon
 #' @export
 s3exist_HL <- function(object,
-                        bucket = NA,
-                        main_folder = TRUE,
-                        key = NA,
-                        secret = NA,
-                        endpoint = NA,
-                        region = NA) {
+                       bucket = NA,
+                       main_folder = TRUE,
+                       key = NA,
+                       secret = NA,
+                       endpoint = NA,
+                       region = NA) {
 
   # Récupérer les valeurs via env vars si manquantes
   if (is.na(key))     key     <- Sys.getenv("HL_S3_KEY")
@@ -93,34 +93,38 @@ s3exist_HL <- function(object,
   if (any(is.na(c(key, secret, bucket, endpoint, region)))) {
     stop("S3 non initialisé correctement. Vérifiez vos variables d'environnement ou les arguments passés.")
   }
-  if (!(is.character(main_folder) || isFALSE(main_folder))) {
-    stop("Pour utiliser 'main_folder = TRUE', une valeur doit être écrit dans environment variable: 'HL_S3_MAIN_FOLDER'")
+  if (isTRUE(main_folder) && !is.character(main_folder)) {
+    stop("Pour utiliser 'main_folder = TRUE', une valeur doit être présente dans 'HL_S3_MAIN_FOLDER'.")
   }
 
-  # si main_folder n'est pas NA, on l'ajoute devant l'objet
+  object2 <- object
+  # Préfixer si demandé
   if (!isFALSE(main_folder)) {
-    object <- paste0(main_folder, "/", object)
+    object2 <- paste0(main_folder, "/", object)
   }
 
-  # head_object via aws.s3 : renvoie méta si existe, lève erreur si 404
-  exists <- tryCatch({
-    aws.s3::head_object(
-      object = object,
-      bucket = bucket,
-      key = key,
-      secret = secret,
-      region = region,
-      base_url = endpoint
-    )
-    TRUE
-  }, error = function(e) {
-    # Si erreur (404 ou autre), on retourne FALSE.
-    # On pourrait inspecter e$message pour distinguer les erreurs si besoin.
-    FALSE
-  })
+  # head_object silencieux et sûr
+  exists <- tryCatch(
+#    suppressMessages(
+#      suppressWarnings(
+        aws.s3::head_object(
+          object = object2,
+#          object = "test",
+          bucket = bucket,
+          key = key,
+          secret = secret,
+          region = region,
+          base_url = endpoint
+#        )
+#      )
+    ),
+    error = function(e) NULL  # si erreur R → NULL
+  )
 
-  return(isTRUE(exists))
+  isTRUE(exists)
+
 }
+
 
 #' Liste les objets dans un bucket ou sous-dossier S3
 #'
@@ -158,13 +162,13 @@ s3list_HL <- function(prefix = "",
     stop("Pour utiliser 'main_folder = TRUE', une valeur doit être écrit dans environment variable: 'HL_S3_MAIN_FOLDER'")
   }
 
-  # si main_folder n'est pas NA, on l'ajoute devant l'objet
-  if (!isFALSE(main_folder)) {
-    object <- paste0(main_folder, "/", object)
+  # Ajouter dossier principal si demandé
+  full_prefix <- prefix
+  if (!isFALSE(main_folder) && nzchar(main_folder)) {
+    full_prefix <- paste0(main_folder, "/", prefix)
+    # Normalisation : pas de double-slash
+    full_prefix <- gsub("//+", "/", full_prefix)
   }
-
-  # Normalisation : pas de double-slash
-  full_prefix <- gsub("//+", "/", full_prefix)
 
   # Appel aws.s3
   aws.s3::get_bucket(
