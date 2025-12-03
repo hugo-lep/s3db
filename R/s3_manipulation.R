@@ -233,35 +233,47 @@ s3listdf_HL <- function(prefix = "",
                         lastModified = "lubridate",
                         ...) {
 
-  df <- s3list_HL(prefix = prefix,
-            bucket = bucket,
-            main_folder = main_folder,
-            key = key,
-            secret = secret,
-            endpoint = endpoint,
-            region = region,
-            max = max) %>%
+  files_raw <- s3list_HL(prefix = prefix,
+                         bucket = bucket,
+                         main_folder = main_folder,
+                         key = key,
+                         secret = secret,
+                         endpoint = endpoint,
+                         region = region,
+                         max = max)
 
-    purrr::map_dfr(~ tibble::tibble(
-      fichier = .x[["Key"]],
-      LastModified_UTC = .x[["LastModified"]]
+  # Certaines implémentations renvoient list(Contents = list(...))
+  files_list <- if (!is.null(files_raw$Contents)) files_raw$Contents else files_raw
+
+  # Si vide, retourner un tibble vide avec bonnes colonnes
+  if (length(files_list) == 0) {
+    return(tibble::tibble(
+      fichier = character(),
+      LastModified_UTC = character(),
+      Key = character()
     ))
+  }
 
-    # Filtrer selon le type si type n'est pas NA
-    if (!is.na(type)) {
-      df <- df %>% dplyr::filter(stringr::str_detect(fichier, fixed(type)))
-    }
+  df <- purrr::map_dfr(files_list, ~ tibble::tibble(
+    fichier = .x[["Key"]],
+    LastModified_UTC = .x[["LastModified"]]
+  ))
 
-    # Créer Key
-    df <- df %>% dplyr::mutate(
-      Key = tools::file_path_sans_ext(basename(fichier))) %>%
-      dplyr::arrange(dplyr::desc(Key))
+  # Filtrer selon le type si type n'est pas NA
+  if (!is.na(type)) {
+    df <- df %>% dplyr::filter(stringr::str_detect(fichier, fixed(type)))
+  }
 
-        # Modifier LastModified si demandé
-    if (!is.na(lastModified) && lastModified == "lubridate") {
-      df <- df %>% dplyr::mutate(LastModified_UTC = lubridate::ymd_hms(LastModified_UTC, tz = "UTC"))
-    }
-    return(df)
+  # Créer Key
+  df <- df %>% dplyr::mutate(
+    Key = tools::file_path_sans_ext(basename(fichier))) %>%
+    dplyr::arrange(dplyr::desc(Key))
+
+  # Modifier LastModified si demandé
+  if (!is.na(lastModified) && lastModified == "lubridate") {
+    df <- df %>% dplyr::mutate(LastModified_UTC = lubridate::ymd_hms(LastModified_UTC, tz = "UTC"))
+  }
+  return(df)
 }
 
 
