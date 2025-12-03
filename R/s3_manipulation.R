@@ -233,7 +233,7 @@ s3listdf_HL <- function(prefix = "",
                         lastModified = "lubridate",
                         ...) {
 
-  files_raw <- s3list_HL(prefix = prefix,
+  files_list <- s3list_HL(prefix = prefix,
                          bucket = bucket,
                          main_folder = main_folder,
                          key = key,
@@ -243,7 +243,7 @@ s3listdf_HL <- function(prefix = "",
                          max = max)
 
   # Certaines implémentations renvoient list(Contents = list(...))
-  files_list <- if (!is.null(files_raw$Contents)) files_raw$Contents else files_raw
+#  files_list <- if (!is.null(files_raw$Contents)) files_raw$Contents else files_raw
 
   # Si vide, retourner un tibble vide avec bonnes colonnes
   if (length(files_list) == 0) {
