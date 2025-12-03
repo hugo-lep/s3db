@@ -135,6 +135,8 @@ s3exist_HL <- function(object,
 #' @param secret S3 secret
 #' @param endpoint Base URL S3
 #' @param region Region (AWS requis, OVH="" )
+#' @param max maximum de fichiers retourner, max = INF pour tout avoir
+#' @param ... Autres paramètres transmis à une fonction interne ou à une méthode
 #'
 #' @return Liste d'objets (comme aws.s3::get_bucket)
 #' @export
@@ -144,7 +146,9 @@ s3list_HL <- function(prefix = "",
                       key = NA,
                       secret = NA,
                       endpoint = NA,
-                      region = NA) {
+                      region = NA,
+                      max = NULL,
+                      ...) {
 
   # Lire valeurs depuis variables d'environnement
   if (is.na(key)) key <- Sys.getenv("HL_S3_KEY")
@@ -177,9 +181,95 @@ s3list_HL <- function(prefix = "",
     key = key,
     secret = secret,
     region = region,
-    base_url = endpoint
+    base_url = endpoint,
+    max = max
   )
 }
+
+utils::globalVariables(c(
+  "Key","fichier","LastModified_UTC"
+))
+#' @title Liste de fichier
+#'
+#' @description
+#' Retourne la liste des fichiers d'un bucket et dossier précis de S3
+#'
+#' @param prefix Sous-dossier (peut être "")
+#' @param bucket Nom du bucket
+#' @param main_folder Si TRUE, préfixe automatiquement "HL_S3_MAIN_FOLDER"
+#' @param key S3 key
+#' @param secret S3 secret
+#' @param endpoint Base URL S3
+#' @param region Region (AWS requis, OVH="" )
+#' @param max maximum de fichiers retourner, max = INF pour tout avoir
+#' @param type Pour ne filtrer qu'un extension de fichier
+#' @param lastModified "lubridate"
+#' @param ... Autres paramètres transmis à une fonction interne ou à une méthode
+#'
+#' @importFrom stringr str_detect str_remove str_c fixed
+#' @importFrom dplyr mutate arrange rename desc filter
+#' @importFrom magrittr %>%
+#' @importFrom lubridate ymd_hms
+#' @importFrom purrr map_dfr
+#' @importFrom tibble tibble
+#' @importFrom tools  file_path_sans_ext
+#'
+#' @returns un dataframe avec les informations du dossier demandé
+#' @export
+#'
+#' @examples
+#' if (interactive()){
+#' files_all <- s3listdf_HL("OTP/legs_history")
+#' }
+s3listdf_HL <- function(prefix = "",
+                        bucket = NA,
+                        main_folder = TRUE,
+                        key = NA,
+                        secret = NA,
+                        endpoint = NA,
+                        region = NA,
+                        max = NULL,
+                        type = ".rds",
+                        lastModified = "lubridate",
+                        ...) {
+
+  df <- s3list_HL(prefix = prefix,
+            bucket = bucket,
+            main_folder = main_folder,
+            key = key,
+            secret = secret,
+            endpoint = endpoint,
+            region = region,
+            max = max) %>%
+
+    purrr::map_dfr(~ tibble::tibble(
+      fichier = .x[["Key"]],
+      LastModified_UTC = .x[["LastModified"]]
+    ))
+
+    # Filtrer selon le type si type n'est pas NA
+    if (!is.na(type)) {
+      df <- df %>% dplyr::filter(stringr::str_detect(fichier, fixed(type)))
+    }
+
+    # Créer Key
+    df <- df %>% dplyr::mutate(
+      Key = tools::file_path_sans_ext(basename(fichier))) %>%
+      dplyr::arrange(dplyr::desc(Key))
+
+        # Modifier LastModified si demandé
+    if (!is.na(lastModified) && lastModified == "lubridate") {
+      df <- df %>% dplyr::mutate(LastModified_UTC = lubridate::ymd_hms(LastModified_UTC, tz = "UTC"))
+    }
+    return(df)
+}
+
+
+
+
+
+
+
 
 #' Fonction pour sauvegarder un .rds sur S3 (OVH compatible)
 #'
@@ -191,6 +281,7 @@ s3list_HL <- function(prefix = "",
 #' @param secret S3 secret
 #' @param endpoint Endpoint OVH
 #' @param region Région ("" pour OVH)
+#'
 #'
 #' @return TRUE si succès, erreur sinon
 #' @export
